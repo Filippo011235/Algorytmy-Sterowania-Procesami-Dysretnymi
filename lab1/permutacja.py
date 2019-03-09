@@ -40,7 +40,7 @@ def possibles(array, deep = 0, c = [None] * SIZE):
             cont[i] = c[i]
         else:
             cont[i] = -1
-    # if (deep == 2):
+    # if (deep == 2):   # to jest nieistotne
     #     print('\n')
 
     for i in range(0, SIZE):
