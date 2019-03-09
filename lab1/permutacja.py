@@ -68,3 +68,5 @@ for i in range(0, SIZE):
 
 display(array)
 print('\n')
+
+cos tam
