@@ -14,7 +14,7 @@
 # for p in permute([1, 2, 3, 4 ]):
 #     print (p) 
 
-SIZE = 1        # zmienna przechowujaca rozmiar tablizy kombinacji
+SIZE = [1]        # zmienna przechowujaca rozmiar tablizy kombinacji/ imitacja wskaznika
 
 # Obliczanie silini
 def strong(n):
@@ -27,15 +27,15 @@ def strong(n):
 
 # sprawdzenie czy dana wartosc pojawila sie wczesniej
 def check(c, i):                
-    for j in range(0, SIZE):
+    for j in range(0, SIZE[0]):
         if (i == c[j]):
             return True
     return False
 
 # przestawie wartosci we wszystkie mosliwe kombinacje
-def possibles(array, deep = 0, c = [None] * SIZE):
-    cont = [None] * SIZE                   # tablica znakow, ktore zostaly juz uzyte
-    for i in range(0, SIZE):
+def possibles(array, deep = 0, c = [None] * SIZE[0]):
+    cont = [None] * SIZE[0]                   # tablica znakow, ktore zostaly juz uzyte
+    for i in range(0, SIZE[0]):
         if ((deep > 0) and (i < deep)):   # wartosci z wyzszej rekurencji
             cont[i] = c[i]
         else:
@@ -43,13 +43,13 @@ def possibles(array, deep = 0, c = [None] * SIZE):
     # if (deep == 2):
     #     print('\n')
 
-    for i in range(0, SIZE):
+    for i in range(0, SIZE[0]):
         if (check(cont, i)):    # kazda wartosc bedzie rozwazana tylko raz
             continue            
         cont[deep] = i          # zabezpiecza 'i' przed powtorzeniem
         
-        if (deep == SIZE - 1):          # wyswietlenie calej linii z przetasowanymi wartosciami kiedy jestesmy na koncu rekurencji
-            for i in range(0, SIZE):
+        if (deep == SIZE[0] - 1):          # wyswietlenie calej linii z przetasowanymi wartosciami kiedy jestesmy na koncu rekurencji
+            for i in range(0, SIZE[0]):
                 print(array[cont[i]]),  # w array nie przestawiam wartosci, tablica 'cont' przechowuje jakby indeksy dla 'array', te indeksy sa przetasowane
             print(' ')
             break
@@ -57,14 +57,17 @@ def possibles(array, deep = 0, c = [None] * SIZE):
     return
 
 def display(array):             # wyswietlanie wszystkich kombinacji
+    SIZE[0]= len(array)
     possibles(array, 0)
 
 
 # main
-SIZE = input("Podaj liczbe zadan: ")
-array = [None] * SIZE
-for i in range(0, SIZE):
-    array[i] = i+1
+# SIZE[0] = input("Podaj liczbe zadan: ")
+# array = [None] * SIZE[0]
+# for i in range(0, SIZE[0]):
+#     array[i] = i+1
 
-display(array)
-print('\n')
+# display(array)
+# print('\n')
+
+
