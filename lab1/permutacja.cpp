@@ -22,16 +22,16 @@ void permutacja(int*nrZadan, int poziomRekurencji = 0, int* c = NULL) {
     int cont[iloscZadan];                    // przechowuje wartości które zostały już użyte
     for (int i=0; i < iloscZadan; i++){
         if ((poziomRekurencji > 0) && (i < poziomRekurencji))   // wartosć z wyższej rekurencji
-            cont[i] = c[i];
+            cont[i] = c[i];     // kopiuje dane z tablicy z poprzedniej rekurencji
         else    
-            cont[i] = -1;
+            cont[i] = -1;       // wypełniam pustą tablicę
     }
     if (poziomRekurencji == 2) cout << endl;
     for (int i=0; i < iloscZadan; i++) {
         if (czy_byla_wczesniej(cont, i)) continue;     // Każda wartość zostanie rozpatrzona tylko raz
         cont[poziomRekurencji] = i;
         
-        if (poziomRekurencji == iloscZadan - 1) {
+        if (poziomRekurencji == iloscZadan - 1) {   // wyświetla watości na ostatnim poziomie rekurencji
             for (int i=0; i < iloscZadan; i++) 
                 cout << nrZadan[cont[i]];
             cout << ' ';
