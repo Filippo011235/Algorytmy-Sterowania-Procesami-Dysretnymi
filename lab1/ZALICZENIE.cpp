@@ -35,7 +35,8 @@ void permutacja(int** tablicaKombinacji, int& licznik, int*nrZadan, int poziomRe
     }
 
     for (int i=0; i < IleZadan; i++) {
-        if (czy_byla_wczesniej(cont, i)) continue;     // Każda wartość zostanie rozpatrzona tylko raz
+        if (czy_byla_wczesniej(cont, i)) 
+            continue;    // Każda wartość zostanie rozpatrzona tylko raz
         cont[poziomRekurencji] = i;
         
         if (poziomRekurencji == IleZadan - 1) {   // wyświetla watości na ostatnim poziomie rekurencji
@@ -67,12 +68,12 @@ int main() {
 
     int ZadaneDane[IleZadan][IleMaszyn] =
     // Zadania \ Maszyny 
-                /*{
+                /* {
                 {4,4,5},  // 6 zamiast 5, blad graf <. tabela, w pdf!
                 {3,5,7},
                 {5,5,3},
                 {4,5,2}
-                };*/ 
+                }; */
                 /*
                 {
                 {10,8},  // 6 zamiast 5, blad graf <. tabela, w pdf!
@@ -105,14 +106,14 @@ int main() {
     }
 
     permutacja(tablicaKombinacji, licznik, nrZadan, 0);
-    // wyswiatla wszystkie permutacje
+    // wyswiatla wszystkie permutacje, w celu sprawdzenia
     //wyswietl(tablicaKombinacji, licznik, IleZadan);
 
 //************************************************
 // Liczenie C_max dla permutacji
     int WynikiCmax[kombinacje] = {0};
     int NrNajoptymalniejszejPermutacji = 0;
-    int NajmniejszyCmax = 1000000; //dla pewności
+    int NajmniejszyCmax = 1000000; // dla pewności
 
     // Petla liczaca Cmax dla permutacji o numerze NrPermutacji
     for(int NrPermutacji = 0; NrPermutacji < kombinacje; NrPermutacji++){
@@ -177,7 +178,7 @@ int main() {
             NajmniejszyCmax = WynikiCmax[NrPermutacji];
             NrNajoptymalniejszejPermutacji = NrPermutacji;    
         }
-    }
+    } // koniec sprawdzania wszystkich permutacji
 
     cout << "***************************************" << endl;
     cout << "Najmniejszy C_max: " << NajmniejszyCmax << " osiagnieto dla permutacji: " << endl;

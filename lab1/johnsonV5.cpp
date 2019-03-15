@@ -1,21 +1,8 @@
 #include <iostream>
 using namespace std;
 
-#define ZADANIA 4
+#define ZADANIA 6
 #define MASZYNY 2   // tego nie zmieniać!
-
-// int sumaWszystkichCzasow(int tablica_czasow[][MASZYNY], int nrMaszyny, int nrZadania)
-// {
-//     int suma = 0;
-//     for (int i = 0; i < nrMaszyny; i++)
-//     {
-//         for (int j = 0; j < nrZadania; j++)
-//         {
-//             suma += tablica_czasow[j][i];
-//         }
-//     }
-//     return suma;
-// }
 
 bool sprawdzZadanie(int kolejnoscZadan[ZADANIA], int zadanie) {
     for (int i=0; i < ZADANIA; i++) {
@@ -28,10 +15,10 @@ bool sprawdzZadanie(int kolejnoscZadan[ZADANIA], int zadanie) {
 
 int main()
 {
-    // Algorytm Johnson'a dla dwuch maszyn
+    // Algorytm Johnson'a dla dwoch maszyn
 
     // Tablice do przechowywania zadań
-    const int nrMaszyny = 3, nrZadania = ZADANIA;   // tutaj zmieniamy liczbę maszyn
+    const int nrMaszyny = 2, nrZadania = ZADANIA;   // tutaj zmieniamy liczbę maszyn
     int tablica_czasow[nrZadania][nrMaszyny];
     int kolejnosc_zadan[ZADANIA];
     int lista_1[ZADANIA];
@@ -43,21 +30,35 @@ int main()
         lista_1[i] = lista_2[i] = -1;
 
     // Uzupełnienie lisy czasami
-    // tablica_czasow[0][0] = 6;
-    // tablica_czasow[0][1] = 9;
-    // tablica_czasow[0][2] = 4;
-    // tablica_czasow[0][3] = 7;
-    // tablica_czasow[0][4] = 9;
-    // tablica_czasow[0][5] = 5;
+/*        int ZadaneDane[ZADANIA][MASZYNY] =
+    // Zadania \ Maszyny 
+                {
+                {4,5},
+                {3,7},
+                {5,3},
+                {4,2}
+                }; */
+/* 
+    for(int i = 0; i < ZADANIA; i++){
+        for(int j = 0; j < MASZYNY; j++){
+            tablica_czasow[j][i] = ZadaneDane[j][i];
+        }
+    } */
+    tablica_czasow[0][0]= 6;
+    tablica_czasow[1][0] = 9;
+    tablica_czasow[2][0] = 4;
+    tablica_czasow[3][0] = 7;
+    tablica_czasow[4][0] = 9;
+    tablica_czasow[5][0] = 5;
 
-    // tablica_czasow[1][0] = 4;
-    // tablica_czasow[1][1] = 8;
-    // tablica_czasow[1][2] = 9;
-    // tablica_czasow[1][3] = 2;
-    // tablica_czasow[1][4] = 2;
-    // tablica_czasow[1][5] = 6;
+    tablica_czasow[0][1] = 4;
+    tablica_czasow[1][1] = 8;
+    tablica_czasow[2][1] = 9;
+    tablica_czasow[3][1] = 2;
+    tablica_czasow[4][1] = 2;
+    tablica_czasow[5][1] = 6;
 
-    tablica_czasow[0][0] = 5;
+/*     tablica_czasow[0][0] = 5;
     tablica_czasow[1][0] = 4;
     tablica_czasow[2][0] = 4;
     tablica_czasow[3][0] = 3;
@@ -70,9 +71,8 @@ int main()
     tablica_czasow[0][2] = 3;
     tablica_czasow[1][2] = 2;
     tablica_czasow[2][2] = 5;
-    tablica_czasow[3][2] = 7;
+    tablica_czasow[3][2] = 7; */
 
-    //int suma = sumaWszystkichCzasow(tablica_czasow, nrMaszyny, nrZadania);
     int suma = 0;
     for (int i = 0; i < nrMaszyny; i++)
     {
@@ -102,7 +102,6 @@ int main()
     // szukanie najmniejszej wartosci
     int zadanieOstatecznie=0, maszynaOstatecznie=0;
     int remisCzas = -1, remisZadanie=-1, remisMaszyna=-1;
-    int granica = 0;
     int k = 0;
     while (k != nrZadania)
     {
@@ -118,7 +117,7 @@ int main()
                         najkrotszyCzas = remisCzas = tablica_czasow[j][i];
                         maszynaOstatecznie = remisMaszyna = i;
                     }
-                    if ((i == remisMaszyna) && (i != 0)) {       //remis na maszynie 1
+                    if ((i == remisMaszyna) && (i == 1)) {       //remis na maszynie 2
                         zadanieOstatecznie = remisZadanie = (tablica_czasow[j][i-1] > tablica_czasow[remisZadanie][i-1] ? j : remisZadanie);
                         najkrotszyCzas = remisCzas = tablica_czasow[j][i];
                         maszynaOstatecznie = remisMaszyna = i;
@@ -127,16 +126,16 @@ int main()
 
                 if ((tablica_czasow[j][i] < najkrotszyCzas) && sprawdzZadanie(kolejnosc_zadan, j)) {   // jak zadanie już było to false
                     najkrotszyCzas = remisCzas = tablica_czasow[j][i];
-                    zadanieOstatecznie = remisZadanie =j;
+                    zadanieOstatecznie = remisZadanie = j;
                     maszynaOstatecznie = remisMaszyna = i;
                 }
             }
         }
         
-        cout << k << " - Najkrótszy czas: -> " << najkrotszyCzas << " <- na maszyniie " << maszynaOstatecznie + 1 << " | zadanie: " << zadanieOstatecznie+1 << endl;
+        cout << k << " - Najkrotszy czas: -> " << najkrotszyCzas << " <- na maszynie " << maszynaOstatecznie + 1 << " | zadanie: " << zadanieOstatecznie+1 << endl;
 
         if (maszynaOstatecznie == 0) {  
-            for (int i=0; i < nrZadania; i++) {     // daje zadanie na koniec lisy
+            for (int i=0; i < nrZadania; i++) {     // daje zadanie na wolna pozycje od poczatku
                 if (lista_1[i] == -1) {
                     lista_1[i] = zadanieOstatecznie;
                     break;
