@@ -6,18 +6,25 @@ struct CzasZadaniaNaMaszynie{
    int KoniecObrobki=0;
 };
 
+struct NrCzasSumyZadania{
+    int Numer = 0;
+    int SumaCzasu = 0;
+};
+
 class ZadaneDane{
     int const IloscZadan;
     int const IloscMaszyn;
     int** TabZadaneDane;
 
     public:
+                                    //ZadaneDane();
     ZadaneDane(int Zadania, int Maszyny): IloscZadan(Zadania), IloscMaszyn(Maszyny){
         TabZadaneDane = new int *[IloscZadan];
         for(int i = 0; i < IloscZadan; i++){
             TabZadaneDane[i] = new int[IloscMaszyn];
         }
     } // konstruktor
+                                    //ZadaneDane(const ZadaneDane&);
     ~ZadaneDane(){
         for(int i = 0; i < IloscZadan; ++i) {
             delete [] TabZadaneDane[i];
@@ -36,29 +43,45 @@ class ZadaneDane{
     int IleMaszyn() const{
         return IloscMaszyn;
     }
-
 }; // klasa
-    
-// ALGORYTM NEH
-void SumaCzasowNaMaszynach(ZadaneDane const TabDanych){
-    int LiczbaZadan = TabDanych.IleZadan();
-    int TabSum[LiczbaZadan] = {};
-    
-    for (int i = 0; i < LiczbaZadan; i++){
-        for(int j = 0; j < TabDanych.IleMaszyn(); j++){
-            TabSum[i] += TabDanych.Pokaz(i, j);
-        }
-    }
+
+void Zamien(struct NrCzasSumyZadania *xp, struct NrCzasSumyZadania *yp) { 
+    struct NrCzasSumyZadania temp = *xp; 
+    *xp = *yp; 
+    *yp = temp; 
 } 
 
+/* class AlgorytmNEH{
+    int const IloscZadan;
+    struct NrCzasSumyZadania SumaCzasowZadania[];
 
-
+    public:
+    AlgorytmNEH(class ZadaneDane Dane): IloscZadan(Dane.IleZadan()){
+        for (int i = 0; i < IloscZadan; i++){
+            SumaCzasowZadania[i].Numer = i; // ZWIEKSZANIE O JEDEN POWINNO BYC ALE PSUJE DESTRUKTOR ZadaneDane
+            cout << "SCZ NR " << SumaCzasowZadania[i].Numer << endl;
+            SumaCzasowZadania[i].SumaCzasu = 0;
+        }
+    }; // konstruktor
+    ~AlgorytmNEH(){}; // destruktor
+    void SumaCzasowNaMaszynach(ZadaneDane const TabDanych){
+        for (int i = 0; i < IloscZadan; i++){
+            cout << "Przechodze do dodawania" << endl;
+            for(int j = 0; j < TabDanych.IleMaszyn(); j++){
+                SumaCzasowZadania[i].SumaCzasu += TabDanych.Pokaz(i, j);
+                cout << "Aktualna suma: " << SumaCzasowZadania[i].SumaCzasu << "    ";
+            }
+            cout << endl << "Numer: " << SumaCzasowZadania[i].Numer << "  Suma: " << SumaCzasowZadania[i].SumaCzasu << endl;
+        }
+    } 
+}; // klasa
+ */
 
 int main(){
 //*****************************************************
 // Uzytkownik podaje:
-    int IleZadan = 4;       // zmienna utworzona na poczatku
-    int IleMaszyn = 3;
+    int IleZadan = 5;       // zmienna utworzona na poczatku
+    int IleMaszyn = 4;
 
     int ZadaneDane2[IleZadan][IleMaszyn] =
     // Zadania \ Maszyny 
@@ -76,34 +99,60 @@ int main(){
                 {8,12},
                 };*/
                 {
-                {4,1,4},
-                {4,3,3},
-                {1,2,3},
-                {5,1,3}
+                {4,1,4,2},
+                {4,3,3,5},
+                {1,2,3,1},
+                {5,1,3,2},
+                {6,1,1,4}
                 };
 
     ZadaneDane TabZadMasz(IleZadan, IleMaszyn);
 
-    // Uzupełnianie tablicy
+    // Uzupełnianie roboczej tablicy
     for(int i = 0; i<IleZadan; i++){
         for(int j = 0; j<IleMaszyn; j++){
-            TabZadMasz.Ustaw(i,j,ZadaneDane2[i][j]);
+            TabZadMasz.Ustaw(i,j,ZadaneDane2[i][j]); 
         }
+    }
+//*****************************************************
+
+    struct NrCzasSumyZadania SumaCzasowZadania[IleZadan];
+    // Liczenie sumy czasow
+    for (int i = 0; i < IleZadan; i++){
+        // cout << "Przechodze do dodawania" << endl;
+        SumaCzasowZadania[i].Numer = i;
+        for(int j = 0; j < IleMaszyn; j++){
+            SumaCzasowZadania[i].SumaCzasu += TabZadMasz.Pokaz(i, j);
+            // cout << "Aktualna suma: " << SumaCzasowZadania[i].SumaCzasu << "    ";
+        }
+        // cout << endl << "Numer: " << SumaCzasowZadania[i].Numer << "  Suma: " << SumaCzasowZadania[i].SumaCzasu << endl;
+    } // Liczenie sumy czasow
+    
+    // cout do  sprawdzenia
+    cout << "Przed bubble sortem: " << endl;
+    for (int i = 0; i < IleZadan; i++){
+        cout << endl << "Numer: " << SumaCzasowZadania[i].Numer << "  Suma: " << SumaCzasowZadania[i].SumaCzasu << endl;
+    }
+
+    // BUBBLE SORT
+    int i, j; 
+    for (i = 0; i < IleZadan-1; i++){       
+       // Ostatnie i elementow jest juz w miejscu
+       for (j = 0; j < IleZadan-i-1; j++){  
+           if (SumaCzasowZadania[j].SumaCzasu < SumaCzasowZadania[j+1].SumaCzasu){ 
+              Zamien(&SumaCzasowZadania[j], &SumaCzasowZadania[j+1]);
+           }
+       }
+    } // Koniec Bąbelka
+
+    // cout sprawdzenia
+    cout << "Po bubble sortcie: " << endl;
+    for (int i = 0; i < IleZadan; i++){
+        cout << endl << "Numer: " << SumaCzasowZadania[i].Numer << "  Suma: " << SumaCzasowZadania[i].SumaCzasu << endl;
     }
 
 
-    SumaCzasowNaMaszynach(TabZadMasz);
-
-
-//*****************************************************
-
-
-
-
-
-
-
-
-//****************
-system("pause");
+//*****************************
+    cout << endl;
+    system("pause");
 } // main
