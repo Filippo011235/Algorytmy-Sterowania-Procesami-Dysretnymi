@@ -1,4 +1,6 @@
 #include <iostream>
+#include <fstream>
+#include <string>
 using namespace std;
 
 struct CzasZadaniaNaMaszynie{
@@ -80,31 +82,65 @@ void Zamien(struct NrCzasSumyZadania *xp, struct NrCzasSumyZadania *yp) {
 int main(){
 //*****************************************************
 // Uzytkownik podaje:
-    int IleZadan = 5;       // zmienna utworzona na poczatku
-    int IleMaszyn = 4;
+    // int IleZadan = 5;       // zmienna utworzona na poczatku
+    // int IleMaszyn = 4;
 
-    int ZadaneDane2[IleZadan][IleMaszyn] =
-    // Zadania \ Maszyny 
-                /* {
-                {4,4,5},  // 6 zamiast 5, blad graf <. tabela, w pdf!
-                {3,5,7},
-                {5,5,3},
-                {4,5,2}
-                }; */
-                /*
-                {
-                {10,8},  // 6 zamiast 5, blad graf <. tabela, w pdf!
-                {9,7},
-                {8,9},
-                {8,12},
-                };*/
-                {
-                {4,1,4,2},
-                {4,3,3,5},
-                {1,2,3,1},
-                {5,1,3,2},
-                {6,1,1,4}
-                };
+    // int ZadaneDane2[IleZadan][IleMaszyn] =
+    // // Zadania \ Maszyny 
+    //             /* {
+    //             {4,4,5},  // 6 zamiast 5, blad graf <. tabela, w pdf!
+    //             {3,5,7},
+    //             {5,5,3},
+    //             {4,5,2}
+    //             }; */
+    //             /*
+    //             {
+    //             {10,8},  // 6 zamiast 5, blad graf <. tabela, w pdf!
+    //             {9,7},
+    //             {8,9},
+    //             {8,12},
+    //             };*/
+    //             {
+    //             {4,1,4,2},
+    //             {4,3,3,5},
+    //             {1,2,3,1},
+    //             {5,1,3,2},
+    //             {6,1,1,4}
+    //             };
+
+    // Pobieranie danych z pliku
+    ifstream PlikDane("dane.txt");  // uchwyt do pliku z danymi
+    string linia;                   // zmienna potrzebna do odczytu
+    int IleZadan = 0;       // zmienna utworzona na poczatku
+    int IleMaszyn = 0;
+
+    if(PlikDane.is_open() == false) {
+        cout << "błąd";
+    }
+
+    PlikDane >> IleZadan;       // popbranie z pliku informacji o ilości zadań 
+    PlikDane >> IleMaszyn;      // pobranie informacji o ilości maszyn
+
+    int ZadaneDane2[IleZadan][IleMaszyn];   // przechowuje czasy odczytane z pliku
+    
+    // Odczyt z pliku
+    for (int i=0; i < IleZadan; i++) {
+        for (int j=0; j < IleMaszyn; j++) {
+            PlikDane >> ZadaneDane2[i][j];
+        }
+    }
+
+// ************************************************************
+    cout << "Sprawdzenie: " << endl;
+    cout << "Zadania: " << IleZadan << "   Maszyny: " << IleMaszyn << endl;
+
+    for (int i=0; i < IleZadan; i++) {
+        for (int j=0; j < IleMaszyn; j++) {
+            cout << ZadaneDane2[i][j] << ' ';
+        }
+        cout << endl;
+    }
+//**************************************************************
 
     ZadaneDane TabZadMasz(IleZadan, IleMaszyn);
 
@@ -154,5 +190,8 @@ int main(){
 
 //*****************************
     cout << endl;
+    PlikDane.close();   // zamykanie pliku z danymi
     system("pause");
+
+    return 0;
 } // main
