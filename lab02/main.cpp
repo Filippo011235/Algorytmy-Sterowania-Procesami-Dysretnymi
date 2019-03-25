@@ -111,6 +111,7 @@ int main(){
     // Pobieranie danych z pliku
     ifstream PlikDane("dane.txt");  // uchwyt do pliku z danymi
     string linia;                   // zmienna potrzebna do odczytu
+    string NazwaZbioru = " ";
     int IleZadan = 0;       // zmienna utworzona na poczatku
     int IleMaszyn = 0;
 
@@ -118,28 +119,33 @@ int main(){
         cout << "błąd";
     }
 
-    PlikDane >> IleZadan;       // popbranie z pliku informacji o ilości zadań 
-    PlikDane >> IleMaszyn;      // pobranie informacji o ilości maszyn
+    while(getline(PlikDane,linia)) {
+        cout << endl << "Nazwa zbioru " << NazwaZbioru << linia << endl;  // wyswietla naze aktualnego zbioru
+        PlikDane >> IleZadan;       // popbranie z pliku informacji o ilości zadań 
+        PlikDane >> IleMaszyn;      // pobranie informacji o ilości maszyn
 
-    int ZadaneDane2[IleZadan][IleMaszyn];   // przechowuje czasy odczytane z pliku
+        int ZadaneDane2[IleZadan][IleMaszyn];   // przechowuje czasy odczytane z pliku
     
-    // Odczyt z pliku
-    for (int i=0; i < IleZadan; i++) {
-        for (int j=0; j < IleMaszyn; j++) {
+        // Odczyt z pliku
+        for (int i=0; i < IleZadan; i++) {
+            for (int j=0; j < IleMaszyn; j++) {
             PlikDane >> ZadaneDane2[i][j];
+            }
         }
-    }
+        PlikDane >> linia;
+        NazwaZbioru = linia;
 
-// ************************************************************
-    cout << "Sprawdzenie: " << endl;
-    cout << "Zadania: " << IleZadan << "   Maszyny: " << IleMaszyn << endl;
+// ***********************SPRAWDZENIE******************************
+        cout << "Sprawdzenie: " << endl;
+        cout << "Zadania: " << IleZadan << "   Maszyny: " << IleMaszyn << endl;
 
-    for (int i=0; i < IleZadan; i++) {
-        for (int j=0; j < IleMaszyn; j++) {
-            cout << ZadaneDane2[i][j] << ' ';
+        for (int i=0; i < IleZadan; i++) {
+            for (int j=0; j < IleMaszyn; j++) {
+                cout << ZadaneDane2[i][j] << ' ';
+            }
+            cout << endl;
         }
-        cout << endl;
-    }
+    
 //**************************************************************
 
     ZadaneDane TabZadMasz(IleZadan, IleMaszyn);
@@ -186,12 +192,16 @@ int main(){
     for (int i = 0; i < IleZadan; i++){
         cout << endl << "Numer: " << SumaCzasowZadania[i].Numer << "  Suma: " << SumaCzasowZadania[i].SumaCzasu << endl;
     }
+//*********************************************************
+// Obliczanie Cmax
+    }
+
 
 
 //*****************************
     cout << endl;
     PlikDane.close();   // zamykanie pliku z danymi
-    system("pause");
+    //system("pause");
 
     return 0;
 } // main
