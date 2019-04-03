@@ -1,6 +1,8 @@
 #include <iostream>
+#include <cstdlib>
 #include <algorithm>    // std::min_element
 #include <fstream>
+#include <ctime>
 using namespace std;
 
 
@@ -26,8 +28,20 @@ void ZamienElemTab(int *tab, int i){
     tab[i - 1] = bufor;
 }
 
+void LosowySwap(int *tab, int IleZadan) {
+    srand(time(NULL));
+    int i = rand() % IleZadan;
+    int j = rand() % IleZadan;
+    while(i==j) {
+        j = rand() % IleZadan;
+    }
+    int bufor = tab[i];
+    tab[i] = tab[j];
+    tab[j] = bufor;
+}
+
 int main(){
-//*****************************************************
+    //*****************************************************
     // Pobieranie danych z pliku
     ifstream PlikDane("dane.txt");  // uchwyt do pliku z danymi
     string linia;                   // zmienna potrzebna do odczytu
@@ -57,6 +71,8 @@ int main(){
         PlikDane >> linia;
         NazwaZbioru = linia;
 
+        // Zminenne do wyżarzania
+        int Pi[IleZadan];  
     //**************************************************************
     // Zmienne do iteracji po tablicy TabZadMasz(dalej w kodzie)
         int IterZad = IleZadan+1;
@@ -164,6 +180,10 @@ int main(){
                     cout << TabKombinacji[OptymalnyNrPermutacji][j] << " ";
                 }
                 cout << endl;
+                // Deklaracja Pi0
+                for (int j=0; j < IleZadan; j++) {
+                    Pi[j] = TabKombinacji[OptymalnyNrPermutacji][j];
+                } 
             }
             
             // Przepisz aktualne zadania z optymalnej TabKombi jako kolejne do rozwazenia
@@ -173,6 +193,25 @@ int main(){
 
             RozwazaneZad++;
         } // while RozwazanychZadan
+        //************************************************************
+        // Symulowane wyżarzanie
+              
+
+        int T = 50;     // temperatura początkowa
+        for (int j=0; j < IleZadan; j++) {
+            cout << Pi[j] << " ";
+        }
+        cout << endl;
+        LosowySwap(Pi, IleZadan);
+        cout << "Po losowaniu" << endl;
+        for (int j=0; j < IleZadan; j++) {
+            cout << Pi[j] << " ";
+        }
+        cout << endl;
+
+        
+
+
     } // koniec pętli while czytajacej z pliku
     //****************************
     // Zamykanie
