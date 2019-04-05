@@ -30,21 +30,19 @@ void ZamienElemTab(int *tab, int i){
 }
 
 // ***********************************************************
-int Cmax(int **TabDoWyliczenia, int DlaTyluZadan, int IleMaszyn) {
-    int IterZad = DlaTyluZadan + 1;
-    cout << "IterZad:    " << IterZad << endl;
-    int IterMasz = IleMaszyn + 1;
-    int IterujOd = 1;           // Chcemy się odnosic do i - 1
+int Cmax(int **TabDoWyliczenia, int RozwazaneZad, int IleMaszyn) {
+    int IterujOd = 1;
+    int IterMasz = IleMaszyn+1;
+    int IterZad = RozwazaneZad+1;
     struct CzasZadaniaNaMaszynie TabZadMasz[IterZad][IterMasz];
+
     // Przypisanie zadanych czasow Zadan Maszynom
     for(int i=IterujOd; i<IterZad; i++){
         for(int j=IterujOd; j<IterMasz; j++){
             TabZadMasz[i][j].Obrobka = TabDoWyliczenia[i-1][j-1]; // i-1, j-1, poniewaz TadZadMasz jest wieksza
-            cout << TabDoWyliczenia[i-1][j-1] << ' ';
         }
-        cout << endl;
     }
-
+    
     // Obliczanie Cmax
     for(int i=IterujOd; i<IterMasz; i++){   // UWAGA odwrotne przypisane "j" i "i" niz zazwyczaj
         for(int j=IterujOd; j<IterZad; j++){
@@ -57,9 +55,8 @@ int Cmax(int **TabDoWyliczenia, int DlaTyluZadan, int IleMaszyn) {
             }
         }
     }
-    cout << "Cmax: " <<  TabZadMasz[DlaTyluZadan][IterMasz].KoniecObrobki << endl;
 
-    return TabZadMasz[DlaTyluZadan][IterMasz].KoniecObrobki; // czyli Cmax
+    return TabZadMasz[RozwazaneZad][IleMaszyn].KoniecObrobki; // czyli Cmax
 }
 // ********************************************************
 
@@ -111,8 +108,8 @@ int main(){
     //**************************************************************
     // Zmienne do iteracji po tablicy TabZadMasz(dalej w kodzie)
         int IterZad = IleZadan+1;
-        int IterMasz = IleMaszyn+1;   
-        int IterujOd = 1;
+        // int IterMasz = IleMaszyn+1;   
+        // int IterujOd = 1;
     //*****************************************************
         int tab[IleZadan] = {}; // Pomocnicza tab przechowujaca aktualnie rozwazane zadania
     
@@ -163,7 +160,7 @@ int main(){
 
             //************************************************
             // Liczenie C_max 
-            IterZad = RozwazaneZad+1;
+            // IterZad = RozwazaneZad+1;
             int WynikiCmax[RozwazaneZad] = {0};
             int OptymalnyNrPermutacji = 0;
             int NajmniejszyCmax = 1000000; // dla pewności
