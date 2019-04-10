@@ -4,6 +4,8 @@
 #include <algorithm>    // std::min_element
 #include <fstream>
 #include <ctime>
+#include <cmath> // dla exp w prawdopodobienstwie
+
 using namespace std;
 
 
@@ -61,7 +63,7 @@ int Cmax(int **TabDoWyliczenia, int RozwazaneZad, int IleMaszyn) {
 // ********************************************************
 
 void LosowySwap(int *tab, int IleZadan) {
-    srand(time(NULL));
+    // srand(time(NULL));
     int i = rand() % IleZadan;
     int j = rand() % IleZadan;
     while(i==j) {
@@ -70,9 +72,31 @@ void LosowySwap(int *tab, int IleZadan) {
     int bufor = tab[i];
     tab[i] = tab[j];
     tab[j] = bufor;
+    cout << "Swapuje: " << j << " z " << i << endl;
+}
+// Funkcja liczaca prawdopodobienstwo przejsca do sasiada w sym. wyzarz.
+float Prawdopodobienstwo(int CmaxPi,int CmaxPiPrim, float Temp){
+    float p = 0; // zmienna pomocnicza
+    if(CmaxPiPrim < CmaxPi){ // Sasiad z lepszym Cmax
+        p = 1;
+    } else {
+        p = exp((CmaxPi - CmaxPiPrim)/Temp);
+    }
+    cout << "wartosc prawdop.: " << p << endl;  
+
+    return p;
+}
+// Zmniejszanie temperatury
+void FunkcjaChlodzenia(float &Temp){
+    float mikro = 0.9;
+    Temp *= mikro;
 }
 
+
+// ********************************************************
+
 int main(){
+    srand(time(NULL));
     //*****************************************************
     // Pobieranie danych z pliku
     ifstream PlikDane("dane.txt");  // uchwyt do pliku z danymi
@@ -105,17 +129,9 @@ int main(){
 
         // Zminenne do wyżarzania
         int Pi[IleZadan];  
-        int CmaxPi;
     //**************************************************************
-    // Zmienne do iteracji po tablicy TabZadMasz(dalej w kodzie)
-        int IterZad = IleZadan+1;
-        // int IterMasz = IleMaszyn+1;   
-        // int IterujOd = 1;
-    //*****************************************************
         int tab[IleZadan] = {}; // Pomocnicza tab przechowujaca aktualnie rozwazane zadania
-    
         int TabKombinacji[IleZadan][IleZadan] = {};
-
     //*******************************************************
     //                      SORTOWANIE
         struct NrCzasSumyZadania SumaCzasowZadania[IleZadan];
@@ -190,12 +206,11 @@ int main(){
             // PRZEZENTACJA WYNIKOW
             if(RozwazaneZad == IleZadan){       // Pokazuj tylko dla ostatniej iteracji
                 cout << "Najmniejszy C_max: " << NajmniejszyCmax << " osiagnieto dla permutacji: " << endl;
-                CmaxPi = NajmniejszyCmax;
                 for (int j=0; j < RozwazaneZad; j++) {
                     cout << TabKombinacji[OptymalnyNrPermutacji][j] << " ";
                 }
                 cout << endl;
-                // Deklaracja Pi0
+                // Deklaracja Pi0 i jego Cmax
                 for (int j=0; j < IleZadan; j++) {
                     Pi[j] = TabKombinacji[OptymalnyNrPermutacji][j];
                 } 
@@ -210,42 +225,64 @@ int main(){
         } // while RozwazanychZadan
         //************************************************************
         // Symulowane wyżarzanie
-              
-
-        int T = 50;     // temperatura początkowa
+        float Temp = 50;     // deklaracja temp. początkowej
         int PiBufor[IleZadan];
-        for (int j=0; j < IleZadan; j++) {
-            PiBufor[j] = Pi[j];
-        }
 
-        LosowySwap(PiBufor, IleZadan);
+        do{
+            for (int j=0; j < IleZadan; j++) {      // zauktualizowanie Bufora
+                PiBufor[j] = Pi[j];
+            }            
+            // Wygenerowanie ruchu (sasiada)
+            LosowySwap(PiBufor, IleZadan);
 
-        // PI prim - utworzenie tablicy potrzebnej do obliczenia Cmax
-        int** TabPiPrim = new int*[IleZadan];
-        for (int i = 0; i < IleZadan; i++)
-            TabPiPrim[i] = new int[IleMaszyn];
-        
-        for(int i = 0; i<IleZadan; i++){    // Przypisanie czasów do pi prim
-            for(int j = 0; j<IleMaszyn; j++){
-                TabPiPrim[i][j] =  ZadaneDane2[PiBufor[i]-1][j];
+            // PI prim - utworzenie tablicy potrzebnej do obliczenia Cmax
+            int** TabPiPrim = new int*[IleZadan];
+            for (int i = 0; i < IleZadan; i++){
+                TabPiPrim[i] = new int[IleMaszyn];
             }
-        }
-
-        // Sprawdzenie
-        cout << "Przypisanie Pi Prim: " << endl;
-        for(int i = 0; i<IleZadan; i++){
-            cout << PiBufor[i] << " : ";
-            for(int j = 0; j<IleMaszyn; j++){
-                cout << TabPiPrim[i][j] << " ";
+            for(int i = 0; i<IleZadan; i++){    // Przypisanie czasów do pi prim
+                for(int j = 0; j<IleMaszyn; j++){
+                    TabPiPrim[i][j] =  ZadaneDane2[PiBufor[i]-1][j];
+                }
             }
-            cout << endl;
-        }
+            int CmaxPiPrim = Cmax(TabPiPrim, IleZadan-1, IleMaszyn);
+            
+            // PI  - utworzenie tablicy potrzebnej do obliczenia Cmax
+            int** TabPi = new int*[IleZadan];
+            for (int i = 0; i < IleZadan; i++){
+                TabPi[i] = new int[IleMaszyn];
+            }
+            for(int i = 0; i<IleZadan; i++){    // Przypisanie czasów do pi
+                for(int j = 0; j<IleMaszyn; j++){
+                    TabPi[i][j] =  ZadaneDane2[Pi[i]-1][j];
+                }
+            }
+            int CmaxPi = Cmax(TabPi, IleZadan-1, IleMaszyn);
 
-        int CmaxPiPrim = Cmax(TabPiPrim, IleZadan-1, IleMaszyn);
+            // Sprawdzenie
+            cout << "Przypisanie Pi Prim: " << endl;
+            for(int i = 0; i<IleZadan; i++){
+                cout << PiBufor[i] << " : ";
+                for(int j = 0; j<IleMaszyn; j++){
+                    cout << TabPiPrim[i][j] << " ";
+                }
+                cout << endl;
+            }
+            cout << "Cmax Pi: " << CmaxPi << endl;
+            cout << "Cmax Pi prim: " << CmaxPiPrim << endl;
 
-        cout << "Cmax Pi: " << CmaxPi << endl;
-        cout << "Cmax Pi prim: " << CmaxPiPrim << endl;
-
+            // Wyznaczenie prawdopodobienstwa przejscia do Pi'
+            
+            // wygenerowanie losowej liczby(od 0.0 do 1.0):
+            float LosowaLiczba = ((double) rand() / (RAND_MAX));
+            cout << "Rand: " << LosowaLiczba << endl;
+            if(Prawdopodobienstwo(CmaxPi, CmaxPiPrim, Temp) >= LosowaLiczba){
+                for (int j=0; j < IleZadan; j++) {
+                    Pi[j] = PiBufor[j];
+                }   
+            }
+            FunkcjaChlodzenia(Temp);
+        } while(Temp > 0.25);  // warunek petli na podstawie temperatury
 
 
     } // koniec pętli while czytajacej z pliku
