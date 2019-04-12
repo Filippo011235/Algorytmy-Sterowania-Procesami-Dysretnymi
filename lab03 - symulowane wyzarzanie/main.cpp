@@ -3,8 +3,13 @@
 #include <algorithm>    // std::min_element
 #include <fstream>
 #include <ctime>
+#include <cmath> // dla exp w prawdopodobienstwie
+
 using namespace std;
 
+#define SREDNIA 4
+// #define TEMPERATURA 4
+// #define MIKRO 4
 
 struct CzasZadaniaNaMaszynie{
    int Obrobka=0; 
@@ -28,8 +33,39 @@ void ZamienElemTab(int *tab, int i){
     tab[i - 1] = bufor;
 }
 
+// ***********************************************************
+int Cmax(int **TabDoWyliczenia, int RozwazaneZad, int IleMaszyn) {
+    int IterujOd = 1;
+    int IterMasz = IleMaszyn+1;
+    int IterZad = RozwazaneZad+1;
+    struct CzasZadaniaNaMaszynie TabZadMasz[IterZad][IterMasz];
+
+    // Przypisanie zadanych czasow Zadan Maszynom
+    for(int i=IterujOd; i<IterZad; i++){
+        for(int j=IterujOd; j<IterMasz; j++){
+            TabZadMasz[i][j].Obrobka = TabDoWyliczenia[i-1][j-1]; // i-1, j-1, poniewaz TadZadMasz jest wieksza
+        }
+    }
+    
+    // Obliczanie Cmax
+    for(int i=IterujOd; i<IterMasz; i++){   // UWAGA odwrotne przypisane "j" i "i" niz zazwyczaj
+        for(int j=IterujOd; j<IterZad; j++){
+            if(TabZadMasz[j-1][i].KoniecObrobki > TabZadMasz[j][i-1].KoniecObrobki){
+                // Aktualna Masz musi skonczyc poprzednie Zad
+                TabZadMasz[j][i].KoniecObrobki = TabZadMasz[j-1][i].KoniecObrobki + TabZadMasz[j][i].Obrobka;
+            } else {    
+                // Poprzednia Masz musi skonczyc aktualne Zad
+                TabZadMasz[j][i].KoniecObrobki = TabZadMasz[j][i-1].KoniecObrobki + TabZadMasz[j][i].Obrobka;
+            }
+        }
+    }
+
+    return TabZadMasz[RozwazaneZad][IleMaszyn].KoniecObrobki; // czyli Cmax
+}
+// ********************************************************
+
 void LosowySwap(int *tab, int IleZadan) {
-    srand(time(NULL));
+    // srand(time(NULL));
     int i = rand() % IleZadan;
     int j = rand() % IleZadan;
     while(i==j) {
@@ -38,9 +74,46 @@ void LosowySwap(int *tab, int IleZadan) {
     int bufor = tab[i];
     tab[i] = tab[j];
     tab[j] = bufor;
+    // cout << "Swapuje: " << j << " z " << i << endl;
+}
+// Funkcja liczaca prawdopodobienstwo przejsca do sasiada w sym. wyzarz.
+float Prawdopodobienstwo(int CmaxPi,int CmaxPiPrim, float Temp){
+    float p = 0; // zmienna pomocnicza
+
+    // cout << "Cmax Pi: " << CmaxPi << endl;
+    // cout << "Cmax Pi prim: " << CmaxPiPrim << endl;
+
+    if(CmaxPiPrim >= CmaxPi){ // Sasiad z lepszym Cmax
+        p = exp((CmaxPi - CmaxPiPrim)/Temp);
+    } else {
+        p = 1;
+    }
+    // cout << "wartosc prawdop.: " << p << endl;  
+    return p;
+}
+// Zmniejszanie temperatury
+void FunkcjaChlodzenia(float &Temp){
+    float mikro = 0.99;
+    Temp *= mikro;
+}
+// Srednia z tablicy
+int SredniaTablicy(int Tab[SREDNIA]){
+    int Wynik = 0;
+    for(int i=0; i < SREDNIA; i++){
+        Wynik += Tab[i];
+    }
+    return Wynik/SREDNIA;
 }
 
+
+// ********************************************************
+
 int main(){
+    srand(time(NULL));
+    ofstream WynikNeh     ("WynikNeh.txt");         // zapis wyników Neh do pliku
+    ofstream WynikSW      ("WynikSW.txt");          // plkik do za
+    ofstream WynikRoznica ("WynikRoznica.txt");     // plkik do za
+    int lMaszynPlik = 0, lZadPlik = 0;
     //*****************************************************
     // Pobieranie danych z pliku
     ifstream PlikDane("dane.txt");  // uchwyt do pliku z danymi
@@ -72,17 +145,11 @@ int main(){
         NazwaZbioru = linia;
 
         // Zminenne do wyżarzania
-        int Pi[IleZadan];  
+        int PiStartoweZNEH[IleZadan]; 
+        int NEH_Cmax = 10000000; 
     //**************************************************************
-    // Zmienne do iteracji po tablicy TabZadMasz(dalej w kodzie)
-        int IterZad = IleZadan+1;
-        int IterMasz = IleMaszyn+1;   
-        int IterujOd = 1;
-    //*****************************************************
         int tab[IleZadan] = {}; // Pomocnicza tab przechowujaca aktualnie rozwazane zadania
-    
         int TabKombinacji[IleZadan][IleZadan] = {};
-
     //*******************************************************
     //                      SORTOWANIE
         struct NrCzasSumyZadania SumaCzasowZadania[IleZadan];
@@ -128,44 +195,25 @@ int main(){
 
             //************************************************
             // Liczenie C_max 
-            IterZad = RozwazaneZad+1;
+            // IterZad = RozwazaneZad+1;
             int WynikiCmax[RozwazaneZad] = {0};
             int OptymalnyNrPermutacji = 0;
             int NajmniejszyCmax = 1000000; // dla pewności
 
             // Petla liczaca Cmax dla permutacji o numerze NrPermutacji
             for(int NrPermutacji = 0; NrPermutacji < RozwazaneZad; NrPermutacji++){
-                int TabDoWyliczenia[RozwazaneZad][IleMaszyn]; // Tab gdzie bedzie przechowywana aktualnie badana permutacja ZadaneDane
+                //int TabDoWyliczenia[RozwazaneZad][IleMaszyn]; // Tab gdzie bedzie przechowywana aktualnie badana permutacja ZadaneDane
+                int** TabDoWyliczenia = new int*[RozwazaneZad];
+                for (int i = 0; i < RozwazaneZad; i++)
+                    TabDoWyliczenia[i] = new int[IleMaszyn];
+
                 for(int i = 0; i<RozwazaneZad; i++){
                     for(int j = 0; j<IleMaszyn; j++){
                         int NrZadaniaZPermutacji = TabKombinacji[NrPermutacji][i];
                         TabDoWyliczenia[i][j] =  ZadaneDane2[NrZadaniaZPermutacji - 1][j];
                     }
                 }
-
-                struct CzasZadaniaNaMaszynie TabZadMasz[IterZad][IterMasz];
-
-                // Przypisanie zadanych czasow Zadan Maszynom
-                for(int i=IterujOd; i<IterZad; i++){
-                    for(int j=IterujOd; j<IterMasz; j++){
-                        TabZadMasz[i][j].Obrobka = TabDoWyliczenia[i-1][j-1]; // i-1, j-1, poniewaz TadZadMasz jest wieksza
-                    }
-                }
-                
-                // Obliczanie Cmax
-                for(int i=IterujOd; i<IterMasz; i++){   // UWAGA odwrotne przypisane "j" i "i" niz zazwyczaj
-                    for(int j=IterujOd; j<IterZad; j++){
-                        if(TabZadMasz[j-1][i].KoniecObrobki > TabZadMasz[j][i-1].KoniecObrobki){
-                            // Aktualna Masz musi skonczyc poprzednie Zad
-                            TabZadMasz[j][i].KoniecObrobki = TabZadMasz[j-1][i].KoniecObrobki + TabZadMasz[j][i].Obrobka;
-                        } else {    
-                            // Poprzednia Masz musi skonczyc aktualne Zad
-                            TabZadMasz[j][i].KoniecObrobki = TabZadMasz[j][i-1].KoniecObrobki + TabZadMasz[j][i].Obrobka;
-                        }
-                    }
-                }
-
-                WynikiCmax[NrPermutacji] = TabZadMasz[RozwazaneZad][IleMaszyn].KoniecObrobki; // czyli Cmax
+                WynikiCmax[NrPermutacji] = Cmax(TabDoWyliczenia, RozwazaneZad, IleMaszyn);
 
                 if(WynikiCmax[NrPermutacji] < NajmniejszyCmax){ // Nadpisanie najmniejszego Cmax
                     NajmniejszyCmax = WynikiCmax[NrPermutacji];
@@ -175,14 +223,35 @@ int main(){
     //*************************************
             // PRZEZENTACJA WYNIKOW
             if(RozwazaneZad == IleZadan){       // Pokazuj tylko dla ostatniej iteracji
-                cout << "Najmniejszy C_max: " << NajmniejszyCmax << " osiagnieto dla permutacji: " << endl;
-                for (int j=0; j < RozwazaneZad; j++) {
-                    cout << TabKombinacji[OptymalnyNrPermutacji][j] << " ";
-                }
-                cout << endl;
-                // Deklaracja Pi0
+                cout << "***************************************" << endl;
+                if (IleMaszyn > lMaszynPlik) {
+                    WynikNeh        << endl << "MASZYNY " << IleMaszyn << endl;
+                    WynikSW         << endl << "MASZYNY " << IleMaszyn << endl;
+                    WynikRoznica    << endl << "MASZYNY " << IleMaszyn << endl;
+                    lMaszynPlik = IleMaszyn;
+                } 
+                if (IleZadan > lZadPlik) {
+                    WynikNeh        << endl << "ZADANIA " << IleZadan << endl;
+                    WynikSW         << endl << "ZADANIA " << IleZadan << endl;
+                    WynikRoznica    << endl << "ZADANIA " << IleZadan << endl;
+                    lZadPlik = IleZadan;
+                } 
+                WynikNeh << NajmniejszyCmax << endl; // Zapis wyników do plku
+
+                cout << "NEH: \t" << NajmniejszyCmax << endl;
+                NEH_Cmax = NajmniejszyCmax; // Do porownania z SW
+                // " osiagnieto dla permutacji: " << endl;
+                // for (int j=0; j < RozwazaneZad; j++) {
+                //     cout << TabKombinacji[OptymalnyNrPermutacji][j] << " ";
+                // }
+                // cout << endl;
+                // Deklaracja Pi0 i jego Cmax
+                // for (int j=0; j < IleZadan; j++) {
+                //     PiStartoweZNEH[j] = TabKombinacji[OptymalnyNrPermutacji][j];
+                // } 
                 for (int j=0; j < IleZadan; j++) {
-                    Pi[j] = TabKombinacji[OptymalnyNrPermutacji][j];
+                    PiStartoweZNEH[j] = TabKombinacji[OptymalnyNrPermutacji][j];
+                    
                 } 
             }
             
@@ -195,23 +264,80 @@ int main(){
         } // while RozwazanychZadan
         //************************************************************
         // Symulowane wyżarzanie
-              
+        int WynikiSW[3];
+        int SredniCmax = 1000000;
+        // Porównanie początkowych kombinacji startowych
+        // for (int n=0; n<IleMaszyn; n++) {
+        //     LosowySwap(PiStartoweZNEH, IleZadan);
+        // }
+        for(int k = 0; k < SREDNIA; k++){    // wykonaj kilka razy, w celu obliczenia sredniej
+            float Temp = 50;     // deklaracja temp. początkowej
+            int Pi[IleZadan], PiBufor[IleZadan];
+            int CmaxPi, CmaxPiPrim;
+            for(int i = 0; i < IleZadan; i++){
+                Pi[i] = PiStartoweZNEH[i];
+            }
+            
+            do{
+                for (int j=0; j < IleZadan; j++) {      // zauktualizowanie Bufora
+                    PiBufor[j] = Pi[j];
+                }            
+                // Wygenerowanie ruchu (sasiada)
+                LosowySwap(PiBufor, IleZadan);
 
-        int T = 50;     // temperatura początkowa
-        for (int j=0; j < IleZadan; j++) {
-            cout << Pi[j] << " ";
-        }
-        cout << endl;
-        LosowySwap(Pi, IleZadan);
-        cout << "Po losowaniu" << endl;
-        for (int j=0; j < IleZadan; j++) {
-            cout << Pi[j] << " ";
-        }
-        cout << endl;
+                // PI prim - utworzenie tablicy potrzebnej do obliczenia Cmax
+                int** TabPiPrim = new int*[IleZadan];
+                for (int i = 0; i < IleZadan; i++){
+                    TabPiPrim[i] = new int[IleMaszyn];
+                }
+                for(int i = 0; i<IleZadan; i++){    // Przypisanie czasów do pi prim
+                    for(int j = 0; j<IleMaszyn; j++){
+                        TabPiPrim[i][j] =  ZadaneDane2[PiBufor[i]-1][j];
+                    }
+                }
+                CmaxPiPrim = Cmax(TabPiPrim, IleZadan-1, IleMaszyn);
+                
+                // PI  - utworzenie tablicy potrzebnej do obliczenia Cmax
+                int** TabPi = new int*[IleZadan];
+                for (int i = 0; i < IleZadan; i++){
+                    TabPi[i] = new int[IleMaszyn];
+                }
+                for(int i = 0; i<IleZadan; i++){    // Przypisanie czasów do pi
+                    for(int j = 0; j<IleMaszyn; j++){
+                        TabPi[i][j] =  ZadaneDane2[Pi[i]-1][j];
+                    }
+                }
+                CmaxPi = Cmax(TabPi, IleZadan-1, IleMaszyn);
 
-        
+                // Sprawdzenie
+                // cout << "Przypisanie Pi Prim: " << endl;
+                // for(int i = 0; i<IleZadan; i++){
+                //     cout << PiBufor[i] << " : ";
+                //     for(int j = 0; j<IleMaszyn; j++){
+                //         cout << TabPiPrim[i][j] << " ";
+                //     }
+                //     cout << endl;
+                // }
 
-
+                // Wyznaczenie prawdopodobienstwa przejscia do Pi'            
+                // wygenerowanie losowej liczby(od 0.0 do 1.0):
+                float LosowaLiczba = ((double) rand() / (RAND_MAX));
+                // cout << "Rand: " << LosowaLiczba << endl;
+                if(Prawdopodobienstwo(CmaxPi, CmaxPiPrim, Temp) >= LosowaLiczba){
+                    for (int j=0; j < IleZadan; j++) {
+                        Pi[j] = PiBufor[j];
+                    }   
+                }
+                FunkcjaChlodzenia(Temp);
+            } while(Temp > 0.25);  // warunek petli na podstawie temperatury
+            WynikiSW[k] = CmaxPi;
+            cout << "SW" << k << ": \t" << WynikiSW[k] << endl;
+        }   // koniec liczenia srednich SW 
+        SredniCmax = SredniaTablicy(WynikiSW);
+        cout << "Sred. Cmax:\t" << SredniCmax << endl;
+        WynikSW << SredniCmax << endl;     // Zapis wyników do plku
+        cout << "Roznica:" << NEH_Cmax - SredniCmax << " (+ na korzysc SW)" << endl;
+        WynikRoznica << (NEH_Cmax - SredniCmax) << endl;    // Zapis wyników do plku
     } // koniec pętli while czytajacej z pliku
     //****************************
     // Zamykanie
