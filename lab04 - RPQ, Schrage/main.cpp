@@ -1,6 +1,8 @@
 #include <iostream>
 #include <fstream>
 #include <vector>
+#include <cstdio>
+#include <algorithm>
 
 using namespace std;
 
@@ -20,8 +22,20 @@ void WyswietlTabRPQ(int Tab[][RPQ], int IleZadan){
     }
 }
 
+int MinR (std::vector<CzasyRPQ> Nniegotowych, int &IndWybranegoZadJ)
+{
+    int Rbufor = 1000000;
+    for (int i=0; i < Nniegotowych.size(); i++) {
+        if(Nniegotowych[i].Czasy[0] < Rbufor){     // jak remis to bierze pierwszy z najmniejszym czasem
+            Rbufor = Nniegotowych[i].Czasy[0];
+            IndWybranegoZadJ = i;
+        }
+    }
+    return Rbufor;
+}
+
 void Schrage(int ZadaneDane[][RPQ], int IleZadan, int PiS[]){
-    int i = 0; // numer kolejnosci zadania dodawanego
+    int iter = 0; // numer kolejnosci zadania dodawanego
     int Sigma[IleZadan] = {}; // Czesciowa kolejnosc uszeregowanych zadan // Czy rozmiar dobry?
     // int Ngotowych[IleZadan][RPQ] = {}; // zbior zadan gotowych do uszeregowania
     // int Nniegotowych[IleZadan][RPQ]; // zbior zadan nieuszeregowanych
@@ -54,23 +68,23 @@ void Schrage(int ZadaneDane[][RPQ], int IleZadan, int PiS[]){
     }
     
     while( !Nniegotowych.empty() || !Ngotowych.empty()){
+    getchar();
+    cout << "Rozmiar Nniegotowych: " << Nniegotowych.size() << endl;
+    cout << "Rozmiar Ngotowych: " << Ngotowych.size() << endl;
     
-    cout << "Pierwszy while, ktory sie zapetla:" << endl;
-    
-        int Rbufor = 1000000;
-        for (int i=0; i < Nniegotowych.size(); i++) {
-            if(Nniegotowych[i].Czasy[0] < Rbufor){     // jak remis to bierze pierwszy z najmniejszym czasem
-                Rbufor = Nniegotowych[i].Czasy[0];
-                IndWybranegoZadJ = i;
-            }
-        }        
-        while(!Nniegotowych.empty() && Rbufor <= t){
+        
+                
+        while(!Nniegotowych.empty() && MinR(Nniegotowych, IndWybranegoZadJ) <= t){
+            cout << "MinR -->    " << MinR(Nniegotowych, IndWybranegoZadJ) << endl;
+            cout << "T    -->    " << t << endl;
+           
+
             // IndWybranegoZadJ ma juz indeks zadania z najmniejszym R, patrz wyzej
             Ngotowych.push_back(Nniegotowych[IndWybranegoZadJ]);
             Nniegotowych.erase(Nniegotowych.begin() + IndWybranegoZadJ);
         }
-        if(Nniegotowych.empty()){
-            t = Rbufor;
+        if(Ngotowych.empty()){
+            t = MinR(Nniegotowych, IndWybranegoZadJ);
         } else {
             // szukanie max q
             int Qbufor = 0;
@@ -80,8 +94,10 @@ void Schrage(int ZadaneDane[][RPQ], int IleZadan, int PiS[]){
                     IndWybranegoZadJ = i;
                 }
             }   
-            Sigma[i] = Ngotowych[IndWybranegoZadJ].NrZad;    // umyslna zamiana; najpierw przepisz, potem usun
-            i++;
+            Sigma[iter] = Ngotowych[IndWybranegoZadJ].NrZad;    // umyslna zamiana; najpierw przepisz, potem usun
+            iter++;
+            cout << "Usuwanie" << endl;
+
             t += Ngotowych[IndWybranegoZadJ].Czasy[1];
             Ngotowych.erase(Ngotowych.begin() + IndWybranegoZadJ);
         }
@@ -92,6 +108,29 @@ void Schrage(int ZadaneDane[][RPQ], int IleZadan, int PiS[]){
     }   
 }   // Schrage
 
+// ***********************************************************
+int Cmax(int ZadaneDane[][RPQ], int PiS[], int IleZadan) {
+    int S[IleZadan];    // Momenty rozpoczecia zadan
+    int C[IleZadan];    // Momenty zakończenia wykonania zadan
+    vector<int> CzasCmax;
+    
+    // dla i =0
+    S[0] = ZadaneDane[PiS[0]][0];              // czas r z pierwszego zadania z PI
+    C[0] = S[0] + ZadaneDane[PiS[0]][1];       // czas r + p z pierwszego zadania z PI
+    CzasCmax.push_back(C[0] + ZadaneDane[PiS[0]][2]);
+    for (int i=1; i < IleZadan; i++) {  
+        S[i] = max(ZadaneDane[PiS[i]][0], S[i-1] + ZadaneDane[PiS[i-1]][1]);
+        C[i] = S[i] + ZadaneDane[PiS[i]][1];
+        CzasCmax.push_back(C[i] + ZadaneDane[PiS[i]][2]);
+    }
+
+    vector<int>::iterator result = max_element(CzasCmax.begin(), CzasCmax.end());
+    // cout << "Result ___ " << ( *result) << endl;
+
+    // return CzasCmax[result]; // czyli Cmax
+    return *result;
+}
+// ********************************************************
 
 int main(){
     // ofstream WynikNeh     ("WynikNeh.txt");         // zapis wyników Neh do pliku
@@ -107,7 +146,7 @@ int main(){
     }
 
     while(getline(PlikDane,linia)) {
-        cout << "***************************************" << endl;
+        cout << endl << "***************************************" << endl;
         PlikDane >> IleZadan;       // popbranie z pliku informacji o ilości zadań 
         cout << "Zad: " << IleZadan << endl; // dla sprawdzenia
 
@@ -127,9 +166,14 @@ int main(){
         for (int i=0; i < IleZadan; i++) {
             cout << PiS[i] << "   ";
         }
+
+        // Cmax
+        cout << endl << "Cmax ____________>  " << Cmax(ZadaneDane, PiS, IleZadan) << endl;
+
     } // while czytania z pliku
 
     //********************************************************
     PlikDane.close();   // zamykanie pliku z danymi
-    system("pause");
+    cout << endl;
+    // system("pause");
 }   // main
