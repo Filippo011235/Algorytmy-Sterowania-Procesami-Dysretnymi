@@ -3,6 +3,8 @@
 #include <vector>
 #include <cstdio>
 #include <algorithm>
+#include <ctime>    // mierzenie czasu
+#include <iomanip> // setprecision
 
 using namespace std;
 
@@ -66,8 +68,6 @@ void UsunZwektora(vector<CzasyRPQ>& Kokos, struct CzasyRPQ DoUsuniecia) {
 void Schrage(int ZadaneDane[][RPQ], int IleZadan, int PiS[]){
     int iter = 0; // numer kolejnosci zadania dodawanego
     int Sigma[IleZadan] = {}; // Czesciowa kolejnosc uszeregowanych zadan // Czy rozmiar dobry?
-    // int Ngotowych[IleZadan][RPQ] = {}; // zbior zadan gotowych do uszeregowania
-    // int Nniegotowych[IleZadan][RPQ]; // zbior zadan nieuszeregowanych
     int t; // zmienna pomocnicza czas
     int IndWybranegoZadJ;        // j*
     std::vector<CzasyRPQ> Ngotowych;
@@ -82,12 +82,6 @@ void Schrage(int ZadaneDane[][RPQ], int IleZadan, int PiS[]){
         Nniegotowych.push_back(Kokos);
     }
 
-    // for (int i=0; i < IleZadan; i++) {
-    //     for (int j=0; j < RPQ; j++) {
-    //         Nniegotowych[i][j] =  ZadaneDane[i][j];
-    //     }
-    // }
-
     // inicjalizowanie poczatkowego czasu t
     t = 1000000000;               // skrajnie duzy czas
     for (int i=0; i < Nniegotowych.size(); i++) {
@@ -97,10 +91,6 @@ void Schrage(int ZadaneDane[][RPQ], int IleZadan, int PiS[]){
     }
     
     while( !Nniegotowych.empty() || !Ngotowych.empty()){
-    // getchar();
-    
-        
-                
         while(!Nniegotowych.empty() && MinR(Nniegotowych, IndWybranegoZadJ) <= t){
 
             // IndWybranegoZadJ ma juz indeks zadania z najmniejszym R, patrz wyzej
@@ -133,13 +123,8 @@ void Schrage(int ZadaneDane[][RPQ], int IleZadan, int PiS[]){
 
 int Schrage_pmtn(int ZadaneDane[][RPQ], int IleZadan, int PiS[]){
     int CMAX = 0;
-    int iter = 0; // numer kolejnosci zadania dodawanego
-    int Sigma[IleZadan] = {}; // Czesciowa kolejnosc uszeregowanych zadan // Czy rozmiar dobry?
-    // int Ngotowych[IleZadan][RPQ] = {}; // zbior zadan gotowych do uszeregowania
-    // int Nniegotowych[IleZadan][RPQ]; // zbior zadan nieuszeregowanych
     int t = 0;  // zmienna pomocnicza czas
     struct CzasyRPQ IndObecnieWykZadL;  // obecnie wykonywane zadanie l
-    int q0 = 1000000; // czas dostarczenia
     struct CzasyRPQ IndWybranegoZadJ;        // j*
     std::vector<CzasyRPQ> Ngotowych;
     std::vector<CzasyRPQ> Nniegotowych;
@@ -153,31 +138,10 @@ int Schrage_pmtn(int ZadaneDane[][RPQ], int IleZadan, int PiS[]){
         Nniegotowych.push_back(Kokos);
     }
 
-    // for (int i=0; i < IleZadan; i++) {
-    //     for (int j=0; j < RPQ; j++) {
-    //         Nniegotowych[i][j] =  ZadaneDane[i][j];
-    //     }
-    // }
-
-    // inicjalizowanie poczatkowego czasu t
-    // t = 1000000000;               // skrajnie duzy czas
-    // for (int i=0; i < Nniegotowych.size(); i++) {
-    //     if(Nniegotowych[i].Czasy[0] < t){     // jak remis to bierze pierwszy z najmniejszym czasem
-    //         t = Nniegotowych[i].Czasy[0];
-    //     }
-    // }
-    
     while( !Nniegotowych.empty() || !Ngotowych.empty()){
-    
-    
-    
-                
         while(!Nniegotowych.empty() && MinR(Nniegotowych).Czasy[0] <= t){
             IndWybranegoZadJ = MinR(Nniegotowych);
-
-            // IndWybranegoZadJ ma juz indeks zadania z najmniejszym R, patrz wyzej
             Ngotowych.push_back(IndWybranegoZadJ);
-            // Nniegotowych.erase(Nniegotowych.begin() + IndWybranegoZadJ);
             UsunZwektora(Nniegotowych, IndWybranegoZadJ);
 
             if (IndWybranegoZadJ.Czasy[2] > IndObecnieWykZadL.Czasy[2]) {
@@ -200,19 +164,13 @@ int Schrage_pmtn(int ZadaneDane[][RPQ], int IleZadan, int PiS[]){
                 }
             }  
             UsunZwektora(Ngotowych, IndWybranegoZadJ);  
-            // Sigma[iter] = Ngotowych[IndWybranegoZadJ].NrZad;    // umyslna zamiana; najpierw przepisz, potem usun
             IndObecnieWykZadL = IndWybranegoZadJ;   // l = *j
             t += IndWybranegoZadJ.Czasy[1];
-            // Ngotowych.erase(Ngotowych.begin() + IndWybranegoZadJ);
-           
 
             CMAX = (CMAX > t + IndWybranegoZadJ.Czasy[2]) ? CMAX : t + IndWybranegoZadJ.Czasy[2];
         }
     }   // while oba N nie sa puste
     
-    // for (int i=0; i < IleZadan; i++) {      // mozna bez Sigma u nas
-    //     PiS[i] = Sigma[i];
-    // }   
     return CMAX;
 }   // Schrage pmtn
 
@@ -233,16 +191,11 @@ int Cmax(int ZadaneDane[][RPQ], int PiS[], int IleZadan) {
     }
 
     vector<int>::iterator result = max_element(CzasCmax.begin(), CzasCmax.end());
-    // cout << "Result ___ " << ( *result) << endl;
-
-    // return CzasCmax[result]; // czyli Cmax
     return *result;
 }
 // ********************************************************
 
 int main(){
-    // ofstream WynikNeh     ("WynikNeh.txt");         // zapis wyników Neh do pliku
-
     //*****************************************************
     // Pobieranie danych z pliku
     ifstream PlikDane("dane.txt");  // uchwyt do pliku z danymi
@@ -253,7 +206,11 @@ int main(){
         cout << "błąd wczytu pliku";
     }
 
+    ofstream Kokos("Czasy.txt");
+
     while(getline(PlikDane,linia)) {
+        clock_t Start, Finish;
+
         cout << endl << "***************************************" << endl;
         PlikDane >> IleZadan;       // popbranie z pliku informacji o ilości zadań 
         cout << "Zad: " << IleZadan << endl; // dla sprawdzenia
@@ -267,22 +224,34 @@ int main(){
                 PlikDane >> ZadaneDane[i][j];
             }
         }
-        //WyswietlTabRPQ(ZadaneDane, IleZadan);
+        Start = clock();
         Schrage(ZadaneDane, IleZadan, PiS);
-        cout << "Ostateczna kolejnosc:" << endl;
-        for (int i=0; i < IleZadan; i++) {
-            cout << PiS[i] << "   ";
-        }
+        Finish = clock();
+        // cout << "Ostateczna kolejnosc:" << endl;
+        // for (int i=0; i < IleZadan; i++) {
+        //     cout << PiS[i] << "   ";
+        // }
 
         // Cmax
         cout << endl << "Cmax ____________>  " << Cmax(ZadaneDane, PiS, IleZadan) << endl;
+        double Czas1 = (Finish - Start)/(long double)CLOCKS_PER_SEC;
+        cout << "Czas Schrage = " << Czas1  << endl;
+        Kokos << "IleZadan: " << IleZadan << endl;
+        Kokos << setprecision(7) << Czas1 << "\t";
+        
 
+
+        Start = clock();
         cout << endl << "Cmax pmtn _._._._>  " << Schrage_pmtn(ZadaneDane, IleZadan, PiS) << endl;
-
-    } // while czytania z pliku
+        Finish = clock();
+        Czas1 =  ((long double)(Finish - Start)/CLOCKS_PER_SEC);
+        cout << "Czas Schrage z przerwaniami = " <<setprecision(7) << Czas1<< endl;
+        Kokos << setprecision(7) << Czas1 << endl;
+        } // while czytania z pliku
 
     //********************************************************
     PlikDane.close();   // zamykanie pliku z danymi
+    Kokos.close();
     cout << endl;
-    // system("pause");
+    system("pause");
 }   // main
