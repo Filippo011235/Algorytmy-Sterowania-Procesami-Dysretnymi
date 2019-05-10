@@ -1,0 +1,28 @@
+IleZadan: 50
+0	0.002
+IleZadan: 100
+0.001	0.002
+IleZadan: 200
+0.002	0.003
+
+
+IleZadan: 6
+0	0.001
+IleZadan: 10
+0.001	0.003
+IleZadan: 20
+0	0.002
+IleZadan: 20
+0.001	0.002
+IleZadan: 50
+0.001	0.002
+IleZadan: 50
+0.001	0.003
+IleZadan: 100
+0	0.003
+IleZadan: 100
+0.001	0.003
+IleZadan: 200
+0.002	0.005
+IleZadan: 1000
+0.044	0.07
