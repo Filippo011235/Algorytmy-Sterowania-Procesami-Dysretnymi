@@ -4,12 +4,15 @@
 #include <cstdio>
 #include <algorithm>
 #include <array>
-
+#include <string>
 using namespace std;
 
 #define RPQ 4
 
-static int OstatecznePi[200];
+static int OstatecznePi1[50];
+static int OstatecznePi2[100];
+static int OstatecznePi3[200];
+static bool Koniec = false;
 
 struct CzasyRPQ{        // Struct zawierająca faktyczny numer zadania z instancji i jej czasy
     int NrZad;
@@ -110,7 +113,7 @@ void Schrage(int ZadaneDane[][RPQ], int IleZadan, int PiS[]){
     }   
 }   // Schrage
 
-int Schrage_pmtn(int ZadaneDane[][RPQ], int IleZadan, int PiS[]){
+int Schrage_pmtn(int ZadaneDane[][RPQ], int IleZadan){
     int CMAX = 0;
     int t = 0;  // zmienna pomocnicza czas
     struct CzasyRPQ IndObecnieWykZadL;  // obecnie wykonywane zadanie l
@@ -229,9 +232,9 @@ int ObliczA(int ZadaneDane[][RPQ], int PiS[], int IleZadan, int const ZadB){
 
 // najwieksze a≤j≤b takie, ze q_π(j) < q_π(b)
 int ObliczC(int ZadaneDane[][RPQ], int PiS[], int IleZadan, int const ZadB, int const ZadA){
-    int ZadC= -1000;  // indeks zadania ZadC
+    int ZadC = -1000;  // indeks zadania ZadC
 
-    for (int i=ZadA; i < ZadB; i++) {	
+    for (int i=ZadA; i < ZadB; i++) {
 		if (ZadaneDane[PiS[i]][2] < ZadaneDane[PiS[ZadB]][2]) { // zad ktorego q jest < od q zadB
             ZadC = i;   // indeks zadania "c" w kolejnossci PiS
 		}
@@ -239,8 +242,9 @@ int ObliczC(int ZadaneDane[][RPQ], int PiS[], int IleZadan, int const ZadB, int 
     return ZadC;    // zwroc ostatnie z zad spelniajacych warunek if() -> oper. max{}
 }
 
-// r/p'(K) ← min r/p π(j), dla j∈K
+// r/q'(K) ← min r/q π(j), dla j∈K
 // KtoryCzas wybiera który z czasow RPQ
+                                        // Może nie działać dla q, "bo tak"?
 int MinCzas(int ZadaneDane[][RPQ], int KolejnoscK[], int RozmiarK, int PiNajlepsze[], int KtoryCzas){
     int Bufor = 1000000;
 
@@ -262,24 +266,45 @@ int SumaCzasuP(int ZadaneDane[][RPQ], int KolejnoscK[], int RozmiarK, int PiNajl
 }
 
 int Maximum( int a, int b, int c ){
-   int max = ( a < b ) ? b : a;
-   return ( ( max < c ) ? c : max );
+   return max(max(a, b), c);
 }
 
-void Carlier(int ZadaneDane[][RPQ], int IleZadan, int BuforPi[], int UB = 100000000){
+void Carlier(int ZadaneDane[][RPQ], int IleZadan, int KopiaPi[], int UB = 100000000){
+    if(Koniec == true){     // Potrzebne żeby uniknąć zbyt wielu rekurencji
+        return;
+    }
     // U - aktualna wartosc funkcji celu
     // LB – dolne oszacowanie wartoci funkcji ce
     // UB – górne oszacowanie wartoci funkcji celu ( warto funkcji celu dla najlepszego
     // dotychczas najlepszego rozwiazania)
     int U, LB; // wartosc lub oszacowania wartosci funkcji celu
     // Inicjalizacja wartosci funkcji celu, czyli U = Cmax
-    // int BuforPi[IleZadan]; // Kolejnosc zadan ze Shrage
+    
+    int BuforPi[IleZadan];
+    for (int i=0; i < IleZadan; i++) {
+        BuforPi[i] = KopiaPi[i];
+    }
     Schrage(ZadaneDane, IleZadan, BuforPi);
     U = Cmax(ZadaneDane, IleZadan, BuforPi);
     if(U < UB){     // Wartosc celu ze Schrage, mniejsza niz gorne oszacowanie
         UB = U;         
-        for(int i=0; i<IleZadan; i++){  // przepisz najlepsze rozwiazanie
-            OstatecznePi[i] = BuforPi[i];
+        if(IleZadan == 50){
+            for(int i=0; i<IleZadan; i++){  // przepisz najlepsze rozwiazanie
+            OstatecznePi1[i] = BuforPi[i];
+            // cout << OstatecznePi[i] << "   ";
+            }
+        }
+        if(IleZadan == 100){
+            for(int i=0; i<IleZadan; i++){  // przepisz najlepsze rozwiazanie
+            OstatecznePi2[i] = BuforPi[i];
+            // cout << OstatecznePi[i] << "   ";
+            }
+        }
+        if(IleZadan == 200){
+            for(int i=0; i<IleZadan; i++){  // przepisz najlepsze rozwiazanie
+            OstatecznePi3[i] = BuforPi[i];
+            // cout << OstatecznePi[i] << "   ";
+            }
         }
     }
     
@@ -287,10 +312,11 @@ void Carlier(int ZadaneDane[][RPQ], int IleZadan, int BuforPi[], int UB = 100000
     int ZadA = ObliczA(ZadaneDane, BuforPi, IleZadan, ZadB);
     int ZadC = ObliczC(ZadaneDane, BuforPi, IleZadan, ZadB, ZadA);
 
-    // cout << endl << "B, A, C >>>\t" << BuforPi[ZadB] << "\t" << BuforPi[ZadA] << "\t" << ZadC << endl;
+    // cout << endl << "A, B, C >>>\t" << ZadA << "\t" << ZadB << "\t" << ZadC << endl;
 
     if(ZadC == -1000){  // Nie ma takiego zadania/blad
-        return; // zwrot wyniku polega na modyfikacji listy zadan PiNajlepsze w argumencie funkcji
+        Koniec = true;  // sprawia ze juz zaden Carlier sie nie wywola(faktyczne wyjscie z funkcji)
+        return; // zakoncz ten wezel
     }
 
     int KolejnoscK[ZadB-ZadC];
@@ -298,37 +324,17 @@ void Carlier(int ZadaneDane[][RPQ], int IleZadan, int BuforPi[], int UB = 100000
         KolejnoscK[i-ZadC-1] = i;
     }
     int RozmiarK = sizeof(KolejnoscK)/sizeof(KolejnoscK[0]);
-    
-    // cout << "KK: \t " << RozmiarK << endl;
-    // for (int i = 0; i < RozmiarK; i++){  
-    //     cout << BuforPi[KolejnoscK[i]] << "\t ";
-    // }
-    // cout << endl;
 
     // r'(K) ← min rπ(j), dla j∈K
     int RPrim = MinCzas(ZadaneDane, KolejnoscK, RozmiarK, BuforPi, 0);
     // q(K) ← min qπ(j), dla j∈K
+                                        // QPrim może nie działać, "bo tak"? Albo zaobserwowano jakąś anomalię
     int QPrim = MinCzas(ZadaneDane, KolejnoscK, RozmiarK, BuforPi, 2);
     // p(K) ← suma pπ(j), dla j∈K
     int PPrim = SumaCzasuP(ZadaneDane, KolejnoscK, RozmiarK, BuforPi);
 
-    int NrZadB = BuforPi[ZadB]; 
-    CzasyRPQ CzasyZadaniaC;
-    // CzasyZadaniaC.Czasy[0] = ZadaneDane[BuforPi[ZadC]][0];
-    // CzasyZadaniaC.Czasy[2] = ZadaneDane[BuforPi[ZadC]][2];
-    CzasyZadaniaC.NrZad = BuforPi[ZadC];
-
-    int RZapasowe = ZadaneDane[BuforPi[ZadC]][0];   // bufor na r_{pi(c)}
-    ZadaneDane[BuforPi[ZadC]][0] = max(RZapasowe, (RPrim + PPrim));     // Max z tych dwoch czasow
-    
-    int KopiaPi[IleZadan];
-    for (int i=0; i < IleZadan; i++) {
-        KopiaPi[i] = BuforPi[i];
-    }
-    
-    LB = Schrage_pmtn(ZadaneDane, IleZadan, KopiaPi);       // nie liczy dla instancji z czasami = 0
     // przygotowanie do Max{h(K), h(K ∪ {c}), LB}
-    int h_K = RPrim + PPrim + QPrim; 
+    int h_K = RPrim + PPrim + QPrim;  // 1342 dla 50 
     // Obliczanie h_ModK, czyli h(K ∪ {c})
     /********************************/
         int ModKolejnoscK[ZadB-ZadC+1];             
@@ -340,45 +346,27 @@ void Carlier(int ZadaneDane[][RPQ], int IleZadan, int BuforPi[], int UB = 100000
         int ModQPrim = MinCzas(ZadaneDane, ModKolejnoscK, ModRozmiarK, BuforPi, 2);
         int ModPPrim = SumaCzasuP(ZadaneDane, ModKolejnoscK, ModRozmiarK, BuforPi);
         int h_ModK = ModRPrim + ModPPrim + ModQPrim;
-        // cout << "ModKK: \t " << ModRozmiarK << endl;
-        // for (int i = 0; i < ModRozmiarK; i++){  
-        //     cout << BuforPi[ModKolejnoscK[i]] << "\t ";
-        // }
-        // cout << endl;
     /*********************************/
-    
-    // cout << endl << "h hmod lb >>>\t" << h_K << "\t" << h_ModK << "\t" << LB << endl;
-    
+
+    int RZapasowe = ZadaneDane[BuforPi[ZadC]][0];   // bufor na r_{pi(c)}
+    ZadaneDane[BuforPi[ZadC]][0] = max(RZapasowe, (RPrim + PPrim));     // Max z tych dwoch czasow
+    LB = Schrage_pmtn(ZadaneDane, IleZadan);       // nie liczy dla instancji z czasami = 0
     LB = Maximum(h_K, h_ModK, LB);
     if(LB < UB){  
-        Carlier(ZadaneDane, IleZadan, KopiaPi, UB);
+        Carlier(ZadaneDane, IleZadan, BuforPi, UB);
     }
-
-        // cout << "Po Carlierze:" << endl;        
-        // for (int i=0; i < IleZadan; i++) {
-        //     cout << BuforPi[i] << "   ";
-        // }
-        // cout << endl;
-
-
     ZadaneDane[BuforPi[ZadC]][0] = RZapasowe;     // odtworzenie r_{pi(c)}
-
-    // ZadaneDane[CzasyZadaniaC.NrZad][0] = RZapasowe;       
 
     int QZapasowe = ZadaneDane[BuforPi[ZadC]][2];   
     ZadaneDane[BuforPi[ZadC]][2] = max(QZapasowe, (QPrim + PPrim));     // Max z tych dwoch czasow
-    LB = Schrage_pmtn(ZadaneDane, IleZadan, KopiaPi);
+    LB = Schrage_pmtn(ZadaneDane, IleZadan);
     LB = Maximum(h_K, h_ModK, LB);
-    
-    int Kopia2[IleZadan];
-    for (int i=0; i < IleZadan; i++) {
-        Kopia2[i] = BuforPi[i];
-    }
 
-    if(LB < UB){  
-        Carlier(ZadaneDane, IleZadan, Kopia2, UB);
+    if(LB < UB){ 
+        Carlier(ZadaneDane, IleZadan, BuforPi, UB);
     }
-    ZadaneDane[BuforPi[ZadC]][2] = QZapasowe;       // odtworzenie r_{pi(c)}
+    ZadaneDane[BuforPi[ZadC]][2] = QZapasowe;       // odtworzenie q_{pi(c)}
+
 }   // Carlier
 
 int main(){
@@ -392,8 +380,6 @@ int main(){
         cout << "błąd wczytu pliku";
     }
 
-    ofstream Wyniki("Czasy.txt");
-
     while(getline(PlikDane,linia)) {
         cout << endl << "***************************************" << endl;
         PlikDane >> IleZadan;       // popbranie z pliku informacji o ilości zadań 
@@ -406,25 +392,30 @@ int main(){
         for (int i=0; i < IleZadan; i++) {
             for (int j=0; j < RPQ - 1; j++) {
                 PlikDane >> ZadaneDane[i][j];
-                // cout << ZadaneDane[i][j] << "\t";
             }
-            // cout << endl;
         }
         Carlier(ZadaneDane, IleZadan, PiS);
-        // Schrage_pmtn(ZadaneDane, IleZadan, PiS);
+        Koniec = false; // pozwala na uruchomienie Carliera dla nast. instancji
         
-        // cout << "Ostateczna kolejnosc:" << endl;        
-        // for (int i=0; i < IleZadan; i++) {
-        //     cout << ++PiS[i] << "   ";
-        // }
+        cout << "Ostateczna kolejnosc:" << endl;        
+  
+        if(IleZadan == 50){
 
-        // Cmax
-        cout << endl << "Cmax ____________>  " << Cmax(ZadaneDane, IleZadan, PiS) << endl;        
-        } // while czytania z pliku
+            cout << endl << "Cmax ===>  " << Cmax(ZadaneDane, IleZadan, OstatecznePi1) << endl;        
+
+        }
+
+        if(IleZadan == 100){
+        cout << endl << "Cmax ===>  " << Cmax(ZadaneDane, IleZadan, OstatecznePi2) << endl;        
+
+        }
+        if(IleZadan == 200){
+            cout << endl << "Cmax ===>  " << Cmax(ZadaneDane, IleZadan, OstatecznePi3) << endl;        
+        }    
+    } // while czytania z pliku
 
     //********************************************************
     PlikDane.close();   // zamykanie pliku z danymi
-    Wyniki.close();
     cout << endl;
     system("pause");
 } // main
