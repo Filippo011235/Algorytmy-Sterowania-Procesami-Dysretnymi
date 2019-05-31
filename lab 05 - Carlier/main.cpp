@@ -9,9 +9,7 @@ using namespace std;
 
 #define RPQ 4
 
-static int OstatecznePi1[50];
-static int OstatecznePi2[100];
-static int OstatecznePi3[200];
+static int OstatecznePi[200];
 static bool Koniec = false;
 
 struct CzasyRPQ{        // Struct zawierająca faktyczny numer zadania z instancji i jej czasy
@@ -288,23 +286,8 @@ void Carlier(int ZadaneDane[][RPQ], int IleZadan, int KopiaPi[], int UB = 100000
     U = Cmax(ZadaneDane, IleZadan, BuforPi);
     if(U < UB){     // Wartosc celu ze Schrage, mniejsza niz gorne oszacowanie
         UB = U;         
-        if(IleZadan == 50){
-            for(int i=0; i<IleZadan; i++){  // przepisz najlepsze rozwiazanie
-            OstatecznePi1[i] = BuforPi[i];
-            // cout << OstatecznePi[i] << "   ";
-            }
-        }
-        if(IleZadan == 100){
-            for(int i=0; i<IleZadan; i++){  // przepisz najlepsze rozwiazanie
-            OstatecznePi2[i] = BuforPi[i];
-            // cout << OstatecznePi[i] << "   ";
-            }
-        }
-        if(IleZadan == 200){
-            for(int i=0; i<IleZadan; i++){  // przepisz najlepsze rozwiazanie
-            OstatecznePi3[i] = BuforPi[i];
-            // cout << OstatecznePi[i] << "   ";
-            }
+        for(int i=0; i<IleZadan; i++){  // przepisz najlepsze rozwiazanie
+            OstatecznePi[i] = BuforPi[i];
         }
     }
     
@@ -398,20 +381,8 @@ int main(){
         Koniec = false; // pozwala na uruchomienie Carliera dla nast. instancji
         
         cout << "Ostateczna kolejnosc:" << endl;        
-  
-        if(IleZadan == 50){
+        cout << endl << "Cmax ===>  " << Cmax(ZadaneDane, IleZadan, OstatecznePi) << endl;        
 
-            cout << endl << "Cmax ===>  " << Cmax(ZadaneDane, IleZadan, OstatecznePi1) << endl;        
-
-        }
-
-        if(IleZadan == 100){
-        cout << endl << "Cmax ===>  " << Cmax(ZadaneDane, IleZadan, OstatecznePi2) << endl;        
-
-        }
-        if(IleZadan == 200){
-            cout << endl << "Cmax ===>  " << Cmax(ZadaneDane, IleZadan, OstatecznePi3) << endl;        
-        }    
     } // while czytania z pliku
 
     //********************************************************
